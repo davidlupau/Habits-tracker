@@ -1,3 +1,4 @@
 This is a test to see if its synchronised on my Mac.
 
 Did it work?
+Yes via GitHub desktop app.
