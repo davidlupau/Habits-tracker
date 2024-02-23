@@ -25,7 +25,7 @@ def create_tables(db):
 		updated_on DATE DEFAULT (date('now')),
 		deleted_on DATE NULL,
 		is_active BOOLEAN DEFAULT 1,
-		created_by TEXT DEFAULT 'user');""")
+		created_by TEXT NOT NULL);""")
 
 	# Creation of the table to store completion habits info
 	cursor.execute("""CREATE TABLE IF NOT EXISTS checkoffs (
@@ -40,13 +40,15 @@ def create_tables(db):
 		habit_id INTEGER,
 		started_on DATE DEFAULT (date('now')),
 		ended_on DATE,
+		current_streak INTEGER DEFAULT 0,
+    	is_active INTEGER DEFAULT 1,
 		FOREIGN KEY(habit_id) REFERENCES habits(habit_id));""")
 
 	db.commit()
 
 # Functions to interact with errors table
-"""Function to add error messages to the errors table"""
 def add_errors(db, error_message):
+	"""Function to add error messages to the errors table"""
 	cur = db.cursor()
 	cur.execute("""
 		INSERT INTO errors (error_message)
@@ -54,8 +56,8 @@ def add_errors(db, error_message):
 		""", (error_message))
 	db.commit()
 
-"""Function to retrieve error messages from the errors table"""
 def get_error_message(db, error_id):
+	"""Function to retrieve error messages from the errors table"""
 	cur = db.cursor()
 	cur.execute("""
 		SELECT *
@@ -65,25 +67,29 @@ def get_error_message(db, error_id):
 	return cur.fetchall()
 
 # Functions to interact with habits table
-"""Function to add a new habit to habits table
+def add_habit(db, task, periodicity, created_by):
+	"""Function to add a new habit to habits table. It returns habit_id of the new habit to be used in the streak table.
 	Parameters:
 		- Task and periodicity are entered by the user.
+		- Periodicity is either daily, weekly, monthly
 		- The creation date is set to the current date by default in the database.
-		- created_by is set to 'user' by default.
+		- created_by is set to 'user' when user creates habit and set to 'predefined' for predefined habits.
 		- is_active is set to 1 by default."""
-def add_habit(db, task, periodicity):
 	cur = db.cursor()
 	cur.execute("""
-		INSERT INTO habits (task, periodicity)
-		VALUES (?, ?)
-		""", (task, periodicity))
+		INSERT INTO habits (task, periodicity, created_by)
+		VALUES (?, ?, ?)
+		""", (task, periodicity, created_by))
 	db.commit()
+# Get the habit_id of the newly created habit
+        habit_id = cur.lastrowid
+        return habit_id
 
-"""Function to update an habit in habits table
+def update_habit(db, habit_id, task, periodicity):
+	"""Function to update an habit in habits table
 	Parameters:
 		- task and periodicity are entered by the user.
 		- habit_id: the unique identifier of the habit to be deleted."""
-def update_habit(db, habit_id, task, periodicity):
 	cur = db.cursor()
 	cur.execute("""
 		UPDATE habits
@@ -92,10 +98,10 @@ def update_habit(db, habit_id, task, periodicity):
 		""", (task, periodicity, habit_id))
 	db.commit()
 
-"""Function to deactivate an habit in habits table. User wishes to deleted an habit, is_active is set to 0 in the database.
+def delete_habit(db, habit_id):
+	"""Function to deactivate an habit in habits table. User wishes to deleted an habit, is_active is set to 0 in the database.
 	Parameters:
 		- habit_id: the unique identifier of the habit to be deleted."""
-def delete_habit(db, habit_id):
 	cur = db.cursor()
 	cur.execute("""
 		UPDATE habits
@@ -104,11 +110,24 @@ def delete_habit(db, habit_id):
 		""", (habit_id,))
 	db.commit()
 
+def get_habit_details(db, habit_id):
+    """Retrieve details of a habit based on habit_id.
+    Parameters:
+    	- habit_id: The unique identifier of the habit.
+    Returns: A tuple containing the habit details such as name, periodicity, and other relevant information."""
+    cur = db.cursor()
+    cur.execute("""
+        SELECT habit_id, task, periodicity, created_by, created_on, is_active
+        FROM habits
+        WHERE habit_id = ?;
+        """, (habit_id,))
+    return cur.fetchone()
+
 # Function to interact with checkoff table
-"""Function to mark a habit as completed. Add a new record in checkoffs table. The date is set to the current date by default in the database.
+def add_checkoff(db, habit_id):
+	"""Function to mark a habit as completed. Add a new record in checkoffs table. The date is set to the current date by default in the database.
 	Parameters:
 		- habit_id: the unique identifier of the habit to be checked off."""
-def add_checkoff(db, habit_id):
 	cur = db.cursor()
 	cur.execute("""
 		INSERT INTO checkoffs (habit_id)
@@ -116,9 +135,9 @@ def add_checkoff(db, habit_id):
 		""", (habit_id,))
 	db.commit()
 
-# Functions te retrieve lists of habits for analysis
-"""Function to retrieve a list of all active tracked habits (is_active = 1) from the habits table created by user (created_by = user)."""
+# Functions to retrieve lists of habits for analysis
 def get_all_habits(db):
+	"""Function to retrieve a list of all active tracked habits (is_active = 1) from the habits table created by user (created_by = user)."""
 	cur = db.cursor()
 	cur.execute("""
 		SELECT *
@@ -127,8 +146,20 @@ def get_all_habits(db):
 		""", ('user', 1))
 	return cur.fetchall()
 
-"""Function to retrieve a list of all predefined habits from the habits table."""
+def get_habits_by_periodicity(db, periodicity):
+	"""Function that retrieves list of active tracked habits (is_active = 1) by periodicity.
+	Parameters:
+	- periodicity is selected by the user (daily, weekly or monthly)."""
+	cur = db.cursor()
+	cur.execute("""
+		SELECT *
+		FROM habits
+		WHERE created_by = ? AND is_active = ?
+		""", (periodicity, 1))
+	return cur.fetchall()
+
 def get_demo_tracking(db):
+	"""Function to retrieve a list of all predefined habits from the habits table."""
 	cur = db.cursor()
 	cur.execute("""
 		SELECT * 
@@ -136,3 +167,65 @@ def get_demo_tracking(db):
 		WHERE created_by = ? AND is_active = ?
 		""", ('predefined', 0))
 	return cur.fetchall()
+
+# Functions to interact with streak table.
+def start_streak(db, habit_id):
+	"""Function to add a new record to the streak table when a new habit is created by user
+	Parameters:
+		- The creation date is set to the current date by default in the database.
+		- habit_id will be used as foreign key to track the habit's streak. It is retrieved from add_habit function."""
+	cur = db.cursor()
+	cur.execute("""
+		INSERT INTO streaks (habit_id, started_on)
+		Values (?, date('now'));
+		""", (habit_id))
+	db.commit()
+
+def increment_current_streak(db, habit_id):
+	"""Function to update the current habit streak by adding 1 to integer in current_streak column
+	Parameters:
+		- habit_id: the unique identifier of the habit to be deleted."""
+	cur = db.cursor()
+	cur.execute("""
+		UPDATE streaks
+		SET current_streak = current_streak + 1
+		WHERE habit_id = ? AND is_active = 1;
+		""", (habit_id,))
+	db.commit()
+
+def end_streak(db, habit_id):
+	"""Function to update the attribute is_active to 0 when habit is deleted or when user breaks the habit.
+	Parameter:
+		- habit_id: the unique identifier of the habit to be deleted."""
+	cur = db.cursor()
+	cur.execute("""
+		UPDATE streaks
+		SET is_active = 0, ended_on = date('now')
+		WHERE habit_id = ? AND is_active = 1;
+		""", (habit_id,))
+	db.commit()
+
+def get_longest_streak_all_habits(db):
+	"""Function to retrieve the longest streak of all habits. Returns habit_id, streak, start and end dates."""
+	cur = db.cursor()
+	cur.execute("""
+		SELECT habit_id, current_streak, started_on, ended_on
+		FROM streaks
+		ORDER BY current_streak DESC
+        LIMIT 1;
+        """,)
+	return cur.fetchone()
+
+def get_longest_streak_one_habit(db, habit_id):
+	"""Function to retrieve the longest streak of a specific habit requested by user. Returns habit_id, streak, start and end dates.
+	Parameter:
+		- habit_id: the unique identifier of the habit user wants the longest streak for."""
+	cur = db.cursor()
+	cur.execute("""
+		SELECT habit_id, current_streak, started_on, ended_on
+		FROM streaks
+		WHERE habit_id = ? AND is_active = 1
+		ORDER BY current_streak DESC
+        LIMIT 1;
+        """,(habit_id,))
+	return cur.fetchone()
