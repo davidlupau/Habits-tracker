@@ -11,11 +11,6 @@ def create_tables(db):
 	"""Create tables for errors messages, streaks, checkoffs and habits from the create_table_sql statement"""
 	cursor = db.cursor()
 
-	# Creation of the table for error messages
-	cursor.execute(""" CREATE TABLE IF NOT EXISTS errors (
-		error_id INTEGER PRIMARY KEY AUTOINCREMENT,
-		error_message TEXT NOT NULL); """)
-
 	# Creation of the table to store habits
 	cursor.execute("""CREATE TABLE IF NOT EXISTS habits (
 		habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,26 +40,6 @@ def create_tables(db):
 		FOREIGN KEY(habit_id) REFERENCES habits(habit_id));""")
 
 	db.commit()
-
-# Functions to interact with errors table
-def add_errors(db, error_message):
-	"""Function to add error messages to the errors table"""
-	cur = db.cursor()
-	cur.execute("""
-		INSERT INTO errors (error_message)
-		VALUES (?)
-		""", (error_message))
-	db.commit()
-
-def get_error_message(db, error_id):
-	"""Function to retrieve error messages from the errors table"""
-	cur = db.cursor()
-	cur.execute("""
-		SELECT *
-		FROM errors
-		WHERE error_id=?
-		""", (error_id,))
-	return cur.fetchall()
 
 # Functions to interact with habits table
 def add_habit(db, task, periodicity, created_by):
