@@ -32,7 +32,8 @@ class Habit:
         return task
 
     def prompt_for_periodicity(self):
-        """Method to prompt the user for the periodicity of the habit (1 for daily, 2 for monthly, 3 for weekly). Input is taken from the command line. If the input is invalid (different from 1, 2 or 3), the user is prompted to try again."""
+        """Method to prompt the user for the periodicity of the habit (1 for daily, 2 for monthly, 3 for weekly).
+        Input is taken from the command line. If the input is invalid (different from 1, 2 or 3), the user is prompted to try again."""
         print("Choose a periodicity for the habit:\n"
               "Press 1 for daily\n"
               "Press 2 for weekly\n"

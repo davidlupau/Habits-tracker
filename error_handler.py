@@ -13,12 +13,12 @@ class error_handler:
 		self.error_message = error_message
 
 	def get_error_message(self):
-		"""Returns the stored error message.
-		Returns:
-			str: The stored error message."""
+		"""Returns the stored error message."""
 		return self.error_message
 
 # Creation of error messages
-error_1 = error_handler("Task name cannot be empty. Please try again.") # Error messqge when the user enters an empty task name
-error_2 = error_handler("Invalid input. enter a number between 1 and 3.") # Error message when the user enters an invalid input when selecting periodicity
+error_1 = error_handler("Task name cannot be empty. Please try again.") # Error message when the user enters an empty task name
+error_2 = error_handler("Please enter a valid number.") # Error message when the user enters an invalid input when needed to convert to an integer
 error_3 = error_handler("Invalid input. Please enter a valid habit id.") # Error message when the user enters an invalid habit id
+error_4 = error_handler("Invalid input. Please enter a number between 1 and 8.") # Error message when the user enters an invalid option from the menu
+error_5 = error_handler("Invalid input. Please enter 1 for yes, 2 for no.") # Error message when the user enters an invalid input when asked to enter 1 for yes or 2 for no

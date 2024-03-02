@@ -4,11 +4,12 @@ import sqlite3
 def get_db(name="main.db"):
 	"""Create a database connection to the SQLite database specified by name"""
 	db = sqlite3.connect(name)
+	create_tables(db)
 	return db
 
 
 def create_tables(db):
-	"""Create tables for errors messages, streaks, checkoffs and habits from the create_table_sql statement"""
+	"""Create tables for errors messages, streaks, checkoffs and habits from the create_table_sql statement."""
 	cursor = db.cursor()
 
 	# Creation of the table to store habits
@@ -20,8 +21,8 @@ def create_tables(db):
 		updated_on DATE DEFAULT (date('now')),
 		deleted_on DATE NULL,
 		is_active BOOLEAN DEFAULT 1,
-		created_by TEXT NOT NULL);""")
-
+		created_by TEXT DEFAULT 'user');""")
+	
 	# Creation of the table to store completion habits info
 	cursor.execute("""CREATE TABLE IF NOT EXISTS checkoffs (
 		checkoff_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,19 +43,40 @@ def create_tables(db):
 	db.commit()
 
 # Functions to interact with habits table
-def add_habit(db, task, periodicity, created_by):
+def insert_predefined_habits(db):
+    """Insert predefined habits into the database.
+    Parameters:
+    	task, periodicity, created_by, is_active are predefined and entered by the developer."""
+	cur = db.cursor()
+
+	predefined_habits = [
+        ('Meditate', 'daily', 'predefined', 0),
+        ('Learn German (5 minutes)', 'daily', 'predefined', 0),
+        ('Go for a 10 km run', 'weekly', 'predefined', 0),
+        ('Cook a new healthy recipe', 'weekly', 'predefined', 0),
+        ('Send 100 euros to kids save account', 'monthly', 'predefined', 0),
+        ('Read a full book', 'monthly', 'predefined', 0),
+    ]
+
+	cur.executemany("""INSERT INTO habits (task, periodicity, created_by, is_active)
+		VALUES (?, ?, ?, ?)
+		""", predefined_habits)
+
+	db.commit()
+
+def add_habit(db, task, periodicity):
 	"""Function to add a new habit to habits table. It returns habit_id of the new habit to be used in the streak table.
 	Parameters:
 		- Task and periodicity are entered by the user.
 		- Periodicity is either daily, weekly, monthly
 		- The creation date is set to the current date by default in the database.
-		- created_by is set to 'user' when user creates habit and set to 'predefined' for predefined habits.
+		- created_by is set by default to 'user' when user creates habit and set to 'predefined' for predefined habits.
 		- is_active is set to 1 by default."""
 	cur = db.cursor()
 	cur.execute("""
-		INSERT INTO habits (task, periodicity, created_by)
-		VALUES (?, ?, ?)
-		""", (task, periodicity, created_by))
+		INSERT INTO habits (task, periodicity)
+		VALUES (?, ?)
+		""", (task, periodicity))
 	db.commit()
 # Get the habit_id of the newly created habit
         habit_id = cur.lastrowid
@@ -116,6 +138,17 @@ def get_all_habits(db):
 	cur = db.cursor()
 	cur.execute("""
 		SELECT *
+		FROM habits
+		WHERE created_by = ? AND is_active = ?
+		""", ('user', 1))
+	return cur.fetchall()
+
+def get_habit_ids(db):
+	"""Function to retrieve a list of all active tracked habits (is_active = 1) from the habits table created by user (created_by = user).
+	Function returns a list of habit_id."""
+	cur = db.cursor()
+	cur.execute("""
+		SELECT habit_id
 		FROM habits
 		WHERE created_by = ? AND is_active = ?
 		""", ('user', 1))
