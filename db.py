@@ -120,7 +120,7 @@ def get_habit_details(db, habit_id):
         """, (habit_id,))
     return cur.fetchone()
 
-# Function to interact with checkoff table
+# Functions to interact with checkoff table
 def add_checkoff(db, habit_id):
 	"""Function to mark a habit as completed. Add a new record in checkoffs table. The date is set to the current date by default in the database.
 	Parameters:
@@ -131,6 +131,21 @@ def add_checkoff(db, habit_id):
 		VALUES (?)
 		""", (habit_id,))
 	db.commit()
+
+def last_checkedoff_on(db, habit_id):
+	"""Function to retrieve the last checkedoff date of a habit.
+	Return the last checkedoff date of a habit from the checkoffs table.
+	Parameters:
+		- habit_id: the unique identifier of the habit to be checked off."""
+	cur = db.cursor()
+	cur.execute("""
+		SELECT checkedoff_on
+		FROM checkoffs
+		WHERE habit_id = ?
+		ORDER BY checkedoff_on DESC
+		LIMIT 1;
+		""", (habit_id,))
+	return cur.fetchone()
 
 # Functions to retrieve lists of habits for analysis
 def get_all_habits(db):
@@ -176,9 +191,9 @@ def get_demo_tracking(db):
 		""", ('predefined', 0))
 	return cur.fetchall()
 
-# Functions to interact with streak table.
+# Functions to handle streaks.
 def start_streak(db, habit_id):
-	"""Function to add a new record to the streak table when a new habit is created by user
+	"""Function to add a new record to the streak table when a new habit is created by user or when user mark habit as completed after breaking it
 	Parameters:
 		- The creation date is set to the current date by default in the database.
 		- habit_id will be used as foreign key to track the habit's streak. It is retrieved from add_habit function."""

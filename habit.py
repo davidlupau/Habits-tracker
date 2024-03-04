@@ -1,5 +1,6 @@
-# Import error messages from error_handler.py
 from error_handler import error_1, error_2
+from db import last_checkedoff_on, get_habit_details
+import datetime
 
 
 class Habit:
@@ -49,3 +50,50 @@ class Habit:
         else:
             print(error_2.get_error_message())
             return self.prompt_for_periodicity()
+
+
+    def check_habit_continuity(self, habit_id):
+        """Function to check if a habit is broken based on its periodicity and the last completion date.
+        Parameters:
+            - habit_id: the unique identifier of the habit to be checked off.
+        The function retrieves the last completion date of the habit from the checkoffs table and compares it to the current date.
+        Returns True if the habit is not broken and False if the habit is broken.
+        The habit is considered broken if the difference between the last completion date and the current date is greater than the periodicity of the habit."""
+        last_completion_date_str = last_checkedoff_on(db, habit_id)
+        # Check if there is a last completion date
+        if not last_completion_date_str:
+            # If there is no last completion date, it's the first checkoff, so the habit is not broken
+            return True
+
+        habit_details = get_habit_details(db, habit_id)
+        periodicity = habit_details[2]
+
+        # Convert the last completion date from string to a datetime object
+        last_completion_date = datetime.datetime.strptime(last_completion_date_str, '%Y-%m-%d').date()
+        # Get the current date
+        current_date = datetime.date.today()
+        # Calculate the difference in days
+        difference = (current_date - last_completion_date).days
+
+        # Check if the habit is broken based on its periodicity
+        if periodicity == 'daily' and difference >= 2:
+            return False  # Habit is broken
+        elif periodicity == 'weekly' and difference >= 8:
+            return False  # Habit is broken
+        elif periodicity == 'monthly':
+            # For monthly, check if the month has changed beyond one month
+            month_diff = (current_date.year - last_completion_date.year) * 12 + current_date.month - last_completion_date.month
+            if month_diff >= 2:
+                return False  # Habit is broken
+
+        return True  # Habit is not broken
+
+    def get_task_periodicity(self, db, habit_id):
+        """Function to retrieve the task name and periodicity of a habit.
+        Parameters:
+            - habit_id: the unique identifier of the habit to be checked off.
+        Returns the task name and periodicity of the habit."""
+        habit_details = get_habit_details(db, habit_id)
+        task_name = habit_details[1]
+        periodicity = habit_details[2]
+        return task_name, periodicity

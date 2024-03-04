@@ -5,7 +5,7 @@ class analysis:
     def display_habit_list(self, db):
         """Method to display the list of habits retrieved from the database.
         The method get_all_habits is called from the db module to retrieve the list of habits (a tuple of lists)."""
-        habit_list = get_all_habits(db)
+        habit_list = db.get_all_habits(db)
         for habit in habit_list:
             # Access the habit id
             habit_id = habit[0]
@@ -60,7 +60,6 @@ class analysis:
         streak = get_longest_streak_one_habit(db, habit_id)
 
         # Get the habit details
-        habit_id = longest_streak[0]
         habit_details = get_habit_details(db, habit_id)
 
         # Access the periodicity to display the correct information
