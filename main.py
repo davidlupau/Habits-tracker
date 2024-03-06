@@ -1,10 +1,11 @@
 # Description: This is the main file for the MindMold program. It will be the file that the user runs to interact with the program.
 import sys
-from habit import prompt_for_task, prompt_for_periodicity, check_habit_continuity, get_task_periodicity
-from analysis import display_habit_list, display_demo_tracking
+from habit import Habit
+from analysis import Analysis
 import db
 from error_handler import error_2, error_3, error_4, error_5
 
+# Functions
 def main_menu():
     """Function to display the main menu of the program. The user can choose between 8 options.
     The user is prompted to enter a number between 1 and 8. If the input is invalid, the user is prompted to try again.
@@ -49,12 +50,21 @@ def return_to_menu():
     input("Press Enter to return to the main menu...")
     main_menu()
 
+def habits_list(db):
+    """Function to display the list of habits retrieved from the database. It calls the display_habit_list method from the Analysis class."""
+    analysis_habit_list = Analysis()
+    analysis_habit_list.display_habit_list(db)
+
+def task_periodicity(db, habit_id)
+	task_periodicity = Habit()
+	task_name, periodicity = task_periodicity.get_task_periodicity(db, habit_id)
+	return task_name, periodicity
 
 # Call function to create the database and the tables if they don't exist
 db.get_db(name="main.db")
 
 # Check if predefined habits have already been created. If not, create them.
-check_predefined_habits = get_demo_tracking(db)
+check_predefined_habits = db.get_demo_tracking(db)
 if len(check_predefined_habits) == 0:
     db.insert_predefined_habits(db)
 
@@ -67,8 +77,9 @@ user_choice = main_menu()
 if user_choice == 1:
     # Create a new habit
     print("You chose to create a new habit. Enter the name of the habit and press enter: ")
-    task = self.prompt_for_task()
-    periodicity = self.prompt_for_periodicity()
+    habit_prompts = Habit()
+    task = habit_prompts.prompt_for_task()
+    periodicity = habit_prompts.prompt_for_periodicity()
 
     # Call a function that add the habit to the database and return the habit_id of the newly created habit
     habit_id = db.add_habit(db, task, periodicity,)
@@ -85,7 +96,7 @@ if user_choice == 1:
 elif user_choice == 2:
     # View your habits
     print("You chose to view your habits.")
-    self.display_habit_list()
+    habits_list(db)
 
     # Prompt the user to press Enter to continue
     return_to_menu()
@@ -94,7 +105,7 @@ elif user_choice == 3:
     # Update a habit
     # Retrieve and display the list of active habits
     print("You chose to update a habit. Here are your current habits:")
-    db.display_habit_list(db)
+    habits_list(db)
 
     # User is asked to choose a habit to update
     print("Which habit would you like to update? Enter the habit id and press enter:")
@@ -103,15 +114,17 @@ elif user_choice == 3:
 
     # Check if the habit_id entered by the user is valid
     if habit_id in active_habits:
-        #Retrieve habit name and periodicity
-        task_name, periodicity = self.get_task_periodicity(db, habit_id)
+        # Create a new instance of the Habit class to prompt the user for the new task name and periodicity
+        habit_prompts = Habit()
+        # Retrieve habit name and periodicity
+        task_name, periodicity = task_periodicity(db, habit_id)
         print(f"You chose to update habit {habit_id}, {task_name}. The periodicity is {periodicity}.")
 
         # Prompt the user for the new task name
         print("Do you want to change the name of the habit? Enter 1 for yes, 2 for no")
         choice = get_int_choice()
         if choice == 1:
-            new_task = self.prompt_for_task()
+            new_task = habit_prompts.prompt_for_task()
         elif choice == 2:
             new_task = task_name
         else:
@@ -121,7 +134,7 @@ elif user_choice == 3:
         print("Do you want to change the periodicity of the habit? Enter 1 for yes, 2 for no")
         choice = get_int_choice()
         if choice == 1:
-            new_periodicity = self.prompt_for_periodicity()
+            new_periodicity = habit_prompts.prompt_for_periodicity()
         elif choice == 2:
             new_periodicity = periodicity
         else:
@@ -140,7 +153,7 @@ elif user_choice == 3:
 elif user_choice == 4:
     # Mark a habit as completed
     print("You chose to mark a habit as completed. Here are your current habits:")
-    db.display_habit_list(db)
+    habits_list(db)
 
     # User is asked to choose a habit to mark as completed
     print("Which habit would you like to mark as completed? Enter the habit id and press enter:")
@@ -150,13 +163,15 @@ elif user_choice == 4:
     # Check if the habit_id entered by the user is valid
     if habit_id in active_habits:
         #Retrieve habit name and periodicity
-        task_name, periodicity = self.get_task_periodicity(db, habit_id)
+        task_name, periodicity = task_periodicity(db, habit_id)
         print(f"You chose to mark habit {habit_id}, {task_name} as completed. The periodicity is {periodicity}. Are you sure you want to proceed? Enter 1 for yes, 2 for no")
 
+        # Create a new instance of the Habit class to check if the habit is broken
+        continuity = Habit()
         choice = get_int_choice()
         if choice == 1:
             # Call a function to check if the habit is broken
-            habit_continuity = self.check_habit_continuity(habit_id)
+            habit_continuity = continuity.check_habit_continuity(db, habit_id)
             if habit_continuity == True:
                 # Call a function to add a checkoff in the checkoffs table
                 db.add_checkoff(db, habit_id)
@@ -183,7 +198,7 @@ elif user_choice == 4:
 elif user_choice == 5:
     # Delete a habit
     print("You chose to delete a habit. Here is a list of your current habits:")
-    db.display_habit_list(db)
+    habits_list(db)
 
     # User is asked to choose a habit to delete
     print("Which habit would you like to delete? Enter the habit id and press enter:")
@@ -193,7 +208,7 @@ elif user_choice == 5:
     # Check if the habit_id entered by the user is valid
     if habit_id in active_habits:
         #Retrieve habit name and periodicity
-        task_name, periodicity = self.get_task_periodicity(db, habit_id)
+        task_name, periodicity = task_periodicity(db, habit_id)
         print(f"You chose to delete habit {habit_id}, {task_name}. The periodicity is {periodicity}. Are you sure you want to delete this habit? Enter 1 for yes, 2 for no")
 
         choice = get_int_choice()
@@ -220,7 +235,7 @@ elif user_choice == 5:
     # Check if the habit_id entered by the user is valid
     if habit_id in active_habits:
         #Retrieve habit name and periodicity
-        task_name, periodicity = self.get_task_periodicity(db, habit_id)
+        task_name, periodicity = task_periodicity(db, habit_id)
         print(f"You chose to delete habit {habit_id}, {task_name}. The periodicity is {periodicity}. Are you sure you want to delete this habit? Enter 1 for yes, 2 for no")
 
         choice = get_int_choice()
@@ -241,12 +256,59 @@ elif user_choice == 5:
 
 elif user_choice == 6:
     # Analyze your habits
-    pass
+    print("Let's see how you are doing. What would you like to analyze?")
+    print("1. List of all habits with the same periodicity")
+    print("2. Longest streak of all habits")
+    print("3. Longest streak of a specific habit")
+    user_choice = main_menu()
+
+    if user_choice == 1:
+        # List of all habits with the same periodicity
+        print("You chose to list all habits with the same periodicity. Enter the periodicity (daily, weekly, monthly) and press enter:")
+        prompt_periodicity = Habit()
+        periodicity = periodicity.prompt_for_periodicity()
+        habit_by_periodicity = Analysis
+        habit_by_periodicity.display_habits_by_periodicity(db, periodicity)
+
+        # Prompt the user to press Enter to continue
+        return_to_menu()
+
+    elif user_choice == 2:
+        # Longest streak of all habits
+        print("You chose to see the longest streak of all habits.")
+        longest_streak = Analysis()
+        longest_streak.display_longest_streak_all_habits(db)
+
+        # Prompt the user to press Enter to continue
+        return_to_menu()
+
+    elif user_choice == 3:
+        # Longest streak of a specific habit
+        print("You chose to see the longest streak of a specific habit. Here is a list of your current habits:")
+        habits_list(db)
+
+        print("Which habit would you like to analyze? Enter the habit id and press enter:")
+        habit_id = get_int_choice()
+        active_habits = db.get_habit_ids(db)
+
+        # Check if the habit_id entered by the user is valid
+        if habit_id in active_habits:
+            habit_streak = Analysis()
+            habit_streak.display_longest_streak_one_habit(db, habit_id)
+
+            # Prompt the user to press Enter to continue
+            return_to_menu()
+        else:
+            print(error_3.get_error_message())
+
+    else:
+        print(error_4.get_error_message())
 
 elif user_choice == 7:
     # See a demo of how MindMold works: analysis of predefined habits. Display list of predefined habits
-    print("You chose to see a demo of how MindMold works. Here are the predefined habits:")
-    self.display_demo_tracking(db)
+    print("You chose to see a demo of how MindMold works. MindMold can display a list of all your current active habits. Here is an example of list of predefined habits:")
+    demo = Analysis()
+    demo.display_demo_tracking(db)
 
     # Prompt the user to press Enter to continue
     input("Press Enter to continue...")

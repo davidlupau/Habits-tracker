@@ -52,7 +52,7 @@ class Habit:
             return self.prompt_for_periodicity()
 
 
-    def check_habit_continuity(self, habit_id):
+    def check_habit_continuity(self, db, habit_id):
         """Function to check if a habit is broken based on its periodicity and the last completion date.
         Parameters:
             - habit_id: the unique identifier of the habit to be checked off.

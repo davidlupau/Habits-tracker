@@ -1,11 +1,11 @@
 from db import get_all_habits, get_longest_streak_all_habits, get_habit_details, get_longest_streak_one_habit, get_demo_tracking
 
-class analysis:
+class Analysis:
 
     def display_habit_list(self, db):
         """Method to display the list of habits retrieved from the database.
         The method get_all_habits is called from the db module to retrieve the list of habits (a tuple of lists)."""
-        habit_list = db.get_all_habits(db)
+        habit_list = get_all_habits(db)
         for habit in habit_list:
             # Access the habit id
             habit_id = habit[0]
@@ -86,6 +86,35 @@ class analysis:
         demo_list = get_demo_tracking(db)
 
         for habit in demo_list:
+            # Access the habit id
+            habit_id = habit[0]
+            print("Habit # ", habit_id)
+
+            # Access the task name
+            task_name = habit[1]
+            print("Task Name:", task_name)
+
+            # Access the periodicity
+            periodicity = habit[2]
+            print("Periodicity:", periodicity)
+
+            # Access the creation date
+            creation_date = habit[3]
+            print("Creation Date:", creation_date)
+
+            # Access the creation date
+            update_date = habit[4]
+            print("Last update on:", update_date, "\n")
+
+    def display_habits_by_periodicity(self, db, periodicity):
+        """Method to display the list of habits by periodicity.
+        The method get_all_habits is called from the db module to retrieve the list of habits (a tuple of lists).
+        The list is then filtered by periodicity and displayed to the user.
+        Parameter: periodicity # daily, weekly, monthly entered by the user.
+        Returns the list of habits with the requested periodicity."""
+        habit_list = get_habit_by_periodicity(db, periodicity)
+
+        for habit in habit_list:
             # Access the habit id
             habit_id = habit[0]
             print("Habit # ", habit_id)
