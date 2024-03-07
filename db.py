@@ -107,17 +107,19 @@ def delete_habit(db, habit_id):
 		""", (habit_id,))
 	db.commit()
 
-def get_habit_details(db, habit_id):
+def get_habit_details(db, habit_id, created_by, is_active)
     """Retrieve details of a habit based on habit_id.
     Parameters:
     	- habit_id: The unique identifier of the habit.
+    	- created_by: 'user' or 'predefined'
+    	- is_active: 1 if created by user, 0 if predefined.
     Returns: A tuple containing the habit details such as name, periodicity, and other relevant information."""
     cur = db.cursor()
     cur.execute("""
         SELECT habit_id, task, periodicity, created_by, created_on, is_active
         FROM habits
-        WHERE habit_id = ?;
-        """, (habit_id,))
+        WHERE habit_id = ? AND created_by = ? AND is_active = ?;
+        """, (habit_id, created_by, is_active))
     return cur.fetchone()
 
 # Functions to interact with checkoff table
@@ -134,7 +136,7 @@ def add_checkoff(db, habit_id):
 
 def last_checkedoff_on(db, habit_id):
 	"""Function to retrieve the last checkedoff date of a habit.
-	Return the last checkedoff date of a habit from the checkoffs table.
+	Returns the last checkedoff date of a habit from the checkoffs table.
 	Parameters:
 		- habit_id: the unique identifier of the habit to be checked off."""
 	cur = db.cursor()
@@ -148,14 +150,17 @@ def last_checkedoff_on(db, habit_id):
 	return cur.fetchone()
 
 # Functions to retrieve lists of habits for analysis
-def get_all_habits(db):
-	"""Function to retrieve a list of all active tracked habits (is_active = 1) from the habits table created by user (created_by = user)."""
+def get_all_habits(db, created_by, is_active):
+	"""Function to retrieve a list of all active tracked habits (is_active = 1) from the habits table created by user (created_by = user).
+	Parameters:
+		- created_by: 'user' or 'predefined'
+		- is_active: 1 if created by user, 0 if predefined."""
 	cur = db.cursor()
 	cur.execute("""
 		SELECT *
 		FROM habits
 		WHERE created_by = ? AND is_active = ?
-		""", ('user', 1))
+		""", (created_by, is_active))
 	return cur.fetchall()
 
 def get_habit_ids(db):
@@ -169,26 +174,19 @@ def get_habit_ids(db):
 		""", ('user', 1))
 	return cur.fetchall()
 
-def get_habits_by_periodicity(db, periodicity):
-	"""Function that retrieves list of active tracked habits (is_active = 1) by periodicity.
+def get_habits_by_periodicity(db, periodicity, created_by, is_active):
+	"""Function that retrieves list of active tracked habits by periodicity.
 	Parameters:
-	- periodicity is selected by the user (daily, weekly or monthly)."""
+		- periodicity is selected by the user (daily, weekly or monthly).
+		- created_by: 'user' or 'predefined'
+		- is_active: 1 if created by user, 0 if predefined.
+	Returns a list of habits with the requested periodicity."""
 	cur = db.cursor()
 	cur.execute("""
 		SELECT *
 		FROM habits
-		WHERE created_by = ? AND is_active = ?
-		""", (periodicity, 1))
-	return cur.fetchall()
-
-def get_demo_tracking(db):
-	"""Function to retrieve a list of all predefined habits from the habits table."""
-	cur = db.cursor()
-	cur.execute("""
-		SELECT * 
-		FROM habits 
-		WHERE created_by = ? AND is_active = ?
-		""", ('predefined', 0))
+		WHERE periodicity = ? AND created_by = ? AND is_active = ?
+		""", (periodicity, created_by, is_active))
 	return cur.fetchall()
 
 # Functions to handle streaks.
@@ -228,27 +226,34 @@ def end_streak(db, habit_id):
 		""", (habit_id,))
 	db.commit()
 
-def get_longest_streak_all_habits(db):
-	"""Function to retrieve the longest streak of all habits. Returns habit_id, streak, start and end dates."""
+def get_longest_streak_all_habits(db, created_by, is_active):
+	"""Function to retrieve the longest streak of all habits.
+	Parameters:
+		- created_by: 'user' or 'predefined'
+		- is_active: 1 if created by user, 0 if predefined.
+	Returns habit_id, streak, start and end dates."""
 	cur = db.cursor()
 	cur.execute("""
 		SELECT habit_id, current_streak, started_on, ended_on
 		FROM streaks
+			WHERE habit_id IN (SELECT habit_id FROM habits WHERE created_by = ? AND is_active = ?)
 		ORDER BY current_streak DESC
         LIMIT 1;
-        """,)
+        """, (created_by, is_active))
 	return cur.fetchone()
 
-def get_longest_streak_one_habit(db, habit_id):
-	"""Function to retrieve the longest streak of a specific habit requested by user. Returns habit_id, streak, start and end dates.
+def get_longest_streak_one_habit(db, habit_id, created_by, is_active):
+	"""Function to retrieve the longest streak of a specific habit. Returns habit_id, streak, start and end dates.
 	Parameter:
-		- habit_id: the unique identifier of the habit user wants the longest streak for."""
+		- habit_id: the unique identifier of the habit user wants the longest streak for.
+		- created_by: 'user' or 'predefined'
+		- is_active: 1 if created by user, 0 if predefined."""
 	cur = db.cursor()
 	cur.execute("""
 		SELECT habit_id, current_streak, started_on, ended_on
 		FROM streaks
-		WHERE habit_id = ? AND is_active = 1
+		WHERE habit_id = ? AND created_by = ? AND is_active = ?
 		ORDER BY current_streak DESC
         LIMIT 1;
-        """,(habit_id,))
+        """,(habit_id, created_by, is_active))
 	return cur.fetchone()

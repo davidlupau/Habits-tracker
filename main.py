@@ -50,12 +50,12 @@ def return_to_menu():
     input("Press Enter to return to the main menu...")
     main_menu()
 
-def habits_list(db):
+def habits_list(db, created_by, is_active):
     """Function to display the list of habits retrieved from the database. It calls the display_habit_list method from the Analysis class."""
     analysis_habit_list = Analysis()
-    analysis_habit_list.display_habit_list(db)
+    analysis_habit_list.display_habit_list(db, created_by, is_active)
 
-def task_periodicity(db, habit_id)
+def task_periodicity(db, habit_id):
 	task_periodicity = Habit()
 	task_name, periodicity = task_periodicity.get_task_periodicity(db, habit_id)
 	return task_name, periodicity
@@ -64,7 +64,7 @@ def task_periodicity(db, habit_id)
 db.get_db(name="main.db")
 
 # Check if predefined habits have already been created. If not, create them.
-check_predefined_habits = db.get_demo_tracking(db)
+check_predefined_habits = db.get_all_habits(db, 'predefined', 0)
 if len(check_predefined_habits) == 0:
     db.insert_predefined_habits(db)
 
@@ -105,7 +105,7 @@ elif user_choice == 3:
     # Update a habit
     # Retrieve and display the list of active habits
     print("You chose to update a habit. Here are your current habits:")
-    habits_list(db)
+    habits_list(db, 'user', 1)
 
     # User is asked to choose a habit to update
     print("Which habit would you like to update? Enter the habit id and press enter:")
@@ -153,7 +153,7 @@ elif user_choice == 3:
 elif user_choice == 4:
     # Mark a habit as completed
     print("You chose to mark a habit as completed. Here are your current habits:")
-    habits_list(db)
+    habits_list(db, 'user', 1)
 
     # User is asked to choose a habit to mark as completed
     print("Which habit would you like to mark as completed? Enter the habit id and press enter:")
@@ -198,7 +198,7 @@ elif user_choice == 4:
 elif user_choice == 5:
     # Delete a habit
     print("You chose to delete a habit. Here is a list of your current habits:")
-    habits_list(db)
+    habits_list(db, 'user', 1)
 
     # User is asked to choose a habit to delete
     print("Which habit would you like to delete? Enter the habit id and press enter:")
@@ -267,8 +267,8 @@ elif user_choice == 6:
         print("You chose to list all habits with the same periodicity. Enter the periodicity (daily, weekly, monthly) and press enter:")
         prompt_periodicity = Habit()
         periodicity = periodicity.prompt_for_periodicity()
-        habit_by_periodicity = Analysis
-        habit_by_periodicity.display_habits_by_periodicity(db, periodicity)
+        habit_by_periodicity = Analysis()
+        habit_by_periodicity.display_habits_by_periodicity(db, periodicity, 'user', 1)
 
         # Prompt the user to press Enter to continue
         return_to_menu()
@@ -277,7 +277,7 @@ elif user_choice == 6:
         # Longest streak of all habits
         print("You chose to see the longest streak of all habits.")
         longest_streak = Analysis()
-        longest_streak.display_longest_streak_all_habits(db)
+        longest_streak.display_longest_streak_all_habits(db, 'user', 1)
 
         # Prompt the user to press Enter to continue
         return_to_menu()
@@ -285,7 +285,7 @@ elif user_choice == 6:
     elif user_choice == 3:
         # Longest streak of a specific habit
         print("You chose to see the longest streak of a specific habit. Here is a list of your current habits:")
-        habits_list(db)
+        habits_list(db, 'user', 1)
 
         print("Which habit would you like to analyze? Enter the habit id and press enter:")
         habit_id = get_int_choice()
@@ -294,7 +294,7 @@ elif user_choice == 6:
         # Check if the habit_id entered by the user is valid
         if habit_id in active_habits:
             habit_streak = Analysis()
-            habit_streak.display_longest_streak_one_habit(db, habit_id)
+            habit_streak.display_longest_streak_one_habit(db, habit_id, 'user', 1)
 
             # Prompt the user to press Enter to continue
             return_to_menu()
@@ -306,12 +306,33 @@ elif user_choice == 6:
 
 elif user_choice == 7:
     # See a demo of how MindMold works: analysis of predefined habits. Display list of predefined habits
-    print("You chose to see a demo of how MindMold works. MindMold can display a list of all your current active habits. Here is an example of list of predefined habits:")
-    demo = Analysis()
-    demo.display_demo_tracking(db)
+    print("You chose to see a demo of how MindMold works. MindMold can display a list of all your current active habits. Here is an example with a list of predefined habits:")
+    habits_list(db, 'predefined', 0)
 
     # Prompt the user to press Enter to continue
     input("Press Enter to continue...")
 
-    # Prompt the user to press Enter to continue
+    # Displays a list of predefined habits with daily periodicity
+    print("MindMold can also display the list of all habits with the same periodicity. Here is an example with the list of all predefined habits with daily periodicity:")
+    habit_by_periodicity = Analysis()
+    habit_by_periodicity.display_habits_by_periodicity(db, 'daily', 'user', 1)
 
+    # Prompt the user to press Enter to continue
+    input("Press Enter to continue...")
+
+    # Display the longest streak of all predefined habits
+    print("MindMold can also display the longest streak of all habits. Here is an example with the longest streak of all predefined habits:")
+    longest_streak = Analysis()
+    longest_streak.display_longest_streak_all_habits(db, 'predefined', 0)
+
+    # Prompt the user to press Enter to continue
+    input("Press Enter to continue...")
+
+    # Display the longest streak of a specific predefined habit
+    print("MindMold can also display the longest streak of a specific habit. Here is an example with the longest streak of a specific predefined habit:")
+    habit_streak = Analysis()
+    habit_streak.display_longest_streak_one_habit(db, 2, 'predefined', 2)
+
+    print("End of demo. You can now use MindMold to track your habits and analyze your progress. Good luck!")
+    # Prompt the user to press Enter to continue
+    return_to_menu()
