@@ -1,64 +1,10 @@
 # Description: This is the main file for the MindMold program. It will be the file that the user runs to interact with the program.
-import sys
 from habit import Habit
 from analysis import Analysis
 import db
-from error_handler import error_2, error_3, error_4, error_5
+from functions_main import main_menu, get_int_choice, return_to_menu, habits_list, task_periodicity
+from error_handler import error_3, error_4, error_5
 
-# Functions
-def main_menu():
-    """Function to display the main menu of the program. The user can choose between 8 options.
-    The user is prompted to enter a number between 1 and 8. If the input is invalid, the user is prompted to try again.
-    The function returns the user's choice. If the user chooses to quit the program, the program is terminated.
-    If the user chooses any other valid option, the program continues to the next step."""
-    print("What's on the agenda?")
-    print("1. Create a new habit")
-    print("2. View your habits")
-    print("3. Update a habit")
-    print("4. Mark a habit as completed")
-    print("5. Delete a habit")
-    print("6. Analyze your habits")
-    print("7. See a demo of how MindMold works")
-    print("8. Quit the program")
-    print("What would you like to do next? Type the number of your choice. Let’s keep the momentum going!")
-    while True:
-        choice = input()
-        try:
-            int_choice = int(choice)
-            if 1 <= int_choice <= 8:
-                if int_choice == 8:
-                    sys.exit("Thank you for using MindMold. Goodbye!")
-                return int_choice
-            else:
-                raise ValueError
-        except ValueError:
-            print(error_4.get_error_message())
-
-def get_int_choice():
-    """Function to prompt the user for an integer input. If the input is invalid, the user is prompted to try again.
-    The function returns the user's choice."""
-    while True:
-        try:
-            choice = int(input())
-            return choice
-            break
-        except ValueError:
-            print(error_2.get_error_message())
-
-def return_to_menu():
-    """Function to prompt the user to press Enter to return to the main menu."""
-    input("Press Enter to return to the main menu...")
-    main_menu()
-
-def habits_list(db, created_by, is_active):
-    """Function to display the list of habits retrieved from the database. It calls the display_habit_list method from the Analysis class."""
-    analysis_habit_list = Analysis()
-    analysis_habit_list.display_habit_list(db, created_by, is_active)
-
-def task_periodicity(db, habit_id):
-	task_periodicity = Habit()
-	task_name, periodicity = task_periodicity.get_task_periodicity(db, habit_id)
-	return task_name, periodicity
 
 # Call function to create the database and the tables if they don't exist
 db.get_db(name="main.db")
@@ -67,6 +13,7 @@ db.get_db(name="main.db")
 check_predefined_habits = db.get_all_habits(db, 'predefined', 0)
 if len(check_predefined_habits) == 0:
     db.insert_predefined_habits(db)
+
 
 # Main program
 # Display the main menu with a welcome message and prompt the user for a choice
@@ -96,7 +43,7 @@ if user_choice == 1:
 elif user_choice == 2:
     # View your habits
     print("You chose to view your habits.")
-    habits_list(db)
+    habits_list(db, 'user', 1)
 
     # Prompt the user to press Enter to continue
     return_to_menu()
@@ -117,7 +64,7 @@ elif user_choice == 3:
         # Create a new instance of the Habit class to prompt the user for the new task name and periodicity
         habit_prompts = Habit()
         # Retrieve habit name and periodicity
-        task_name, periodicity = task_periodicity(db, habit_id)
+        task_name, periodicity = task_periodicity(db, habit_id, 'user', 1)
         print(f"You chose to update habit {habit_id}, {task_name}. The periodicity is {periodicity}.")
 
         # Prompt the user for the new task name
@@ -163,7 +110,7 @@ elif user_choice == 4:
     # Check if the habit_id entered by the user is valid
     if habit_id in active_habits:
         #Retrieve habit name and periodicity
-        task_name, periodicity = task_periodicity(db, habit_id)
+        task_name, periodicity = task_periodicity(db, habit_id, 'user', 1)
         print(f"You chose to mark habit {habit_id}, {task_name} as completed. The periodicity is {periodicity}. Are you sure you want to proceed? Enter 1 for yes, 2 for no")
 
         # Create a new instance of the Habit class to check if the habit is broken
@@ -208,7 +155,7 @@ elif user_choice == 5:
     # Check if the habit_id entered by the user is valid
     if habit_id in active_habits:
         #Retrieve habit name and periodicity
-        task_name, periodicity = task_periodicity(db, habit_id)
+        task_name, periodicity = task_periodicity(db, habit_id, 'user', 1)
         print(f"You chose to delete habit {habit_id}, {task_name}. The periodicity is {periodicity}. Are you sure you want to delete this habit? Enter 1 for yes, 2 for no")
 
         choice = get_int_choice()
@@ -235,7 +182,7 @@ elif user_choice == 5:
     # Check if the habit_id entered by the user is valid
     if habit_id in active_habits:
         #Retrieve habit name and periodicity
-        task_name, periodicity = task_periodicity(db, habit_id)
+        task_name, periodicity = task_periodicity(db, habit_id, 'user', 1)
         print(f"You chose to delete habit {habit_id}, {task_name}. The periodicity is {periodicity}. Are you sure you want to delete this habit? Enter 1 for yes, 2 for no")
 
         choice = get_int_choice()
@@ -266,7 +213,7 @@ elif user_choice == 6:
         # List of all habits with the same periodicity
         print("You chose to list all habits with the same periodicity. Enter the periodicity (daily, weekly, monthly) and press enter:")
         prompt_periodicity = Habit()
-        periodicity = periodicity.prompt_for_periodicity()
+        periodicity = prompt_periodicity.prompt_for_periodicity()
         habit_by_periodicity = Analysis()
         habit_by_periodicity.display_habits_by_periodicity(db, periodicity, 'user', 1)
 
@@ -331,7 +278,7 @@ elif user_choice == 7:
     # Display the longest streak of a specific predefined habit
     print("MindMold can also display the longest streak of a specific habit. Here is an example with the longest streak of a specific predefined habit:")
     habit_streak = Analysis()
-    habit_streak.display_longest_streak_one_habit(db, 2, 'predefined', 2)
+    habit_streak.display_longest_streak_one_habit(db, 3, 'predefined', 2)
 
     print("End of demo. You can now use MindMold to track your habits and analyze your progress. Good luck!")
     # Prompt the user to press Enter to continue

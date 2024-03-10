@@ -1,4 +1,4 @@
-from db import get_all_habits, get_longest_streak_all_habits, get_habit_details, get_longest_streak_one_habit, get_habit_by_periodicity
+from db import get_all_habits, get_longest_streak_all_habits, get_habit_details, get_longest_streak_one_habit, get_habits_by_periodicity
 
 class Analysis:
 
@@ -32,11 +32,14 @@ class Analysis:
 
         print("End of list.")
 
-    def display_longest_streak_all_habits(self, db, created_by, is_active
+    def display_longest_streak_all_habits(self, db, created_by, is_active):
         """Method to display the longest streak of all habits (active and inactive).
         The method get_longest_streak_all_habits is called from the db module to retrieve the longest streak of all habits.
         The method get_habit_details is called from the db module to retrieve name and periodicity of the habit with the longest streak to display complete information.
-        The information is then displayed to the user."""
+        The information is then displayed to the user.
+        Parameters:
+            - created_by ('user' or 'predefined')
+            - is_active (1 if created by user, 0 if predefined)."""
         # Get the longest streak of all habits
         longest_streak = get_longest_streak_all_habits(db, created_by, is_active)
 
@@ -53,10 +56,10 @@ class Analysis:
             periodicity = "month(s)"
 
         # Display all information regarding the longest streak
-            if longest_streak[3] is None:
-                print(f"The longest streak of all habits is habit #", longest_streak[0], ", ", habit_details[1], "is", longest_streak[1], " ", {periodicity}, ". It started on", longest_streak[2], "and is still ongoing.\n")
-            else:
-                print(f"The longest streak of all habits is habit #", longest_streak[0], ", ", habit_details[1], "is", longest_streak[1], " ", {periodicity}, ". It started on", longest_streak[2], "and ended on", longest_streak[3], "\n")
+        if longest_streak[3] is None:
+            print(f"The longest streak of all habits is habit #", longest_streak[0], ", ", habit_details[1], "is", longest_streak[1], " ", {periodicity}, ". It started on", longest_streak[2], "and is still ongoing.\n")
+        else:
+            print(f"The longest streak of all habits is habit #", longest_streak[0], ", ", habit_details[1], "is", longest_streak[1], " ", {periodicity}, ". It started on", longest_streak[2], "and ended on", longest_streak[3], "\n")
 
     def display_longest_streak_one_habit(self, db, habit_id, created_by, is_active):
         """Method to display the longest streak of a specific habit. habit_id is entered by the user.
@@ -98,7 +101,7 @@ class Analysis:
             - created_by ('user' or 'predefined')
             - is_active (1 if created by user, 0 if predefined).
         Returns the list of habits with the requested periodicity."""
-        habit_list = get_habit_by_periodicity(db, periodicity, created_by, is_active)
+        habit_list = get_habits_by_periodicity(db, periodicity, created_by, is_active)
 
         for habit in habit_list:
             # Access the habit id

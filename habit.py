@@ -52,7 +52,7 @@ class Habit:
             return self.prompt_for_periodicity()
 
 
-    def check_habit_continuity(self, db, habit_id):
+    def check_habit_continuity(self, db, habit_id, created_by, is_active):
         """Function to check if a habit is broken based on its periodicity and the last completion date.
         Parameters:
             - habit_id: the unique identifier of the habit to be checked off.
@@ -65,7 +65,7 @@ class Habit:
             # If there is no last completion date, it's the first checkoff, so the habit is not broken
             return True
 
-        habit_details = get_habit_details(db, habit_id)
+        habit_details = get_habit_details(db, habit_id, created_by, is_active)
         periodicity = habit_details[2]
 
         # Convert the last completion date from string to a datetime object
@@ -88,12 +88,14 @@ class Habit:
 
         return True  # Habit is not broken
 
-    def get_task_periodicity(self, db, habit_id):
+    def get_task_periodicity(self, db, habit_id, created_by, is_active):
         """Function to retrieve the task name and periodicity of a habit.
         Parameters:
             - habit_id: the unique identifier of the habit to be checked off.
+            - created_by ('user' or 'predefined')
+            - is_active (1 if created by user, 0 if predefined).
         Returns the task name and periodicity of the habit."""
-        habit_details = get_habit_details(db, habit_id)
+        habit_details = get_habit_details(db, habit_id, created_by, is_active)
         task_name = habit_details[1]
         periodicity = habit_details[2]
         return task_name, periodicity

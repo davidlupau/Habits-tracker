@@ -6,10 +6,10 @@ class Error_handler:
     Methods:
         get_error_message(): Returns the stored error message."""
 
-    def __init__(self, error_message: str):
+	def __init__(self, error_message: str):
 		"""Initializes the error_handler with a specific error message.
-        Parameters:
-            error_message (str): The error message to be associated with this error handler."""
+		Parameters:
+			error_message (str): The error message to be associated with this error handler."""
 		self.error_message = error_message
 
 	def get_error_message(self):

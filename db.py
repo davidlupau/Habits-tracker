@@ -35,7 +35,7 @@ def create_tables(db):
 		streak_id INTEGER PRIMARY KEY AUTOINCREMENT,
 		habit_id INTEGER,
 		started_on DATE DEFAULT (date('now')),
-		ended_on DATE,
+		ended_on DATE DEFAULT NULL,
 		current_streak INTEGER DEFAULT 0,
     	is_active INTEGER DEFAULT 1,
 		FOREIGN KEY(habit_id) REFERENCES habits(habit_id));""")
@@ -44,23 +44,32 @@ def create_tables(db):
 
 # Functions to interact with habits table
 def insert_predefined_habits(db):
-    """Insert predefined habits into the database.
+	"""Insert predefined habits into the database: 6 habits in Habits table and 2 streaks are entered in Streaks table.
     Parameters:
-    	task, periodicity, created_by, is_active are predefined and entered by the developer."""
+		task, periodicity, created_by, is_active and dates are predefined and entered by the developer."""
 	cur = db.cursor()
 
 	predefined_habits = [
-        ('Meditate', 'daily', 'predefined', 0),
-        ('Learn German (5 minutes)', 'daily', 'predefined', 0),
-        ('Go for a 10 km run', 'weekly', 'predefined', 0),
-        ('Cook a new healthy recipe', 'weekly', 'predefined', 0),
-        ('Send 100 euros to kids save account', 'monthly', 'predefined', 0),
-        ('Read a full book', 'monthly', 'predefined', 0),
+        (1, 'Meditate', 'daily', 'predefined', '2024-01-10', '2024-01-31', 0),
+        (2, 'Learn German (5 minutes)', 'daily', 'predefined', '2024-01-10', '2024-01-10', 0),
+        (3, 'Go for a 10 km run', 'weekly', 'predefined', '2024-01-10', '2024-02-01', 0),
+        (4, 'Cook a new healthy recipe', 'weekly', 'predefined', '2024-01-14', '2024-02-17', 0),
+        (5, 'Send 100 euros to kids save account', 'monthly', 'predefined', '2024-01-10', '2024-01-28', 0),
+        (6, 'Read a full book', 'monthly', 'predefined', '2024-01-13', '2024-01-13', 0),
     ]
 
-	cur.executemany("""INSERT INTO habits (task, periodicity, created_by, is_active)
-		VALUES (?, ?, ?, ?)
+	cur.executemany("""INSERT INTO habits (habit_id, task, periodicity, created_by, created_on, updated_on, is_active)
+		VALUES (?, ?, ?, ?, ?, ?, ?
 		""", predefined_habits)
+
+	predefined_streaks = [
+        (1, '2024-01-10', '2024-01-22', 12, 0),
+        (2, '2024-02-01', None, 6, 1),
+    ]
+
+	cur.executemany("""INSERT INTO streaks (habit_id, started_on, ended_on, current_streak, is_active)
+        VALUES (?, ?, ?, ?, ?)
+        """, predefined_streaks)
 
 	db.commit()
 
@@ -79,11 +88,11 @@ def add_habit(db, task, periodicity):
 		""", (task, periodicity))
 	db.commit()
 # Get the habit_id of the newly created habit
-        habit_id = cur.lastrowid
-        return habit_id
+	habit_id = cur.lastrowid
+	return habit_id
 
 def update_habit(db, habit_id, task, periodicity):
-	"""Function to update an habit in habits table
+	"""Function to update a habit in habits table
 	Parameters:
 		- task and periodicity are entered by the user.
 		- habit_id: the unique identifier of the habit to be deleted."""
@@ -96,7 +105,7 @@ def update_habit(db, habit_id, task, periodicity):
 	db.commit()
 
 def delete_habit(db, habit_id):
-	"""Function to deactivate an habit in habits table. User wishes to deleted an habit, is_active is set to 0 in the database.
+	"""Function to deactivate a habit in habits table. User wishes to delete a habit, is_active is set to 0 in the database.
 	Parameters:
 		- habit_id: the unique identifier of the habit to be deleted."""
 	cur = db.cursor()
@@ -107,20 +116,20 @@ def delete_habit(db, habit_id):
 		""", (habit_id,))
 	db.commit()
 
-def get_habit_details(db, habit_id, created_by, is_active)
-    """Retrieve details of a habit based on habit_id.
+def get_habit_details(db, habit_id, created_by, is_active):
+	"""Retrieve details of a habit based on habit_id.
     Parameters:
     	- habit_id: The unique identifier of the habit.
     	- created_by: 'user' or 'predefined'
     	- is_active: 1 if created by user, 0 if predefined.
     Returns: A tuple containing the habit details such as name, periodicity, and other relevant information."""
-    cur = db.cursor()
-    cur.execute("""
+	cur = db.cursor()
+	cur.execute("""
         SELECT habit_id, task, periodicity, created_by, created_on, is_active
         FROM habits
         WHERE habit_id = ? AND created_by = ? AND is_active = ?;
         """, (habit_id, created_by, is_active))
-    return cur.fetchone()
+	return cur.fetchone()
 
 # Functions to interact with checkoff table
 def add_checkoff(db, habit_id):
@@ -130,8 +139,8 @@ def add_checkoff(db, habit_id):
 	cur = db.cursor()
 	cur.execute("""
 		INSERT INTO checkoffs (habit_id)
-		VALUES (?)
-		""", (habit_id,))
+			VALUES (?)
+			""", (habit_id,))
 	db.commit()
 
 def last_checkedoff_on(db, habit_id):
