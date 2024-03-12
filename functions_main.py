@@ -1,8 +1,20 @@
 # This file contains the functions used in the main.py file.
 import sys
+from db import get_all_habits, insert_predefined_habits, get_db
 from habit import Habit
 from analysis import Analysis
 from error_handler import error_2, error_4
+
+
+def cli()
+    """Function to prompt the user to press Enter to return to the main menu."""
+    # Call function to create the database and the tables if they don't exist
+    get_db(name="main.db")
+
+    # Check if predefined habits have already been created. If not, create them.
+    check_predefined_habits = get_all_habits(db, 'predefined', 0)
+    if len(check_predefined_habits) == 0:
+        insert_predefined_habits(db)
 
 
 def main_menu():

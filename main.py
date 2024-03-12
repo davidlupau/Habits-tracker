@@ -6,13 +6,8 @@ from functions_main import main_menu, get_int_choice, return_to_menu, habits_lis
 from error_handler import error_3, error_4, error_5
 
 
-# Call function to create the database and the tables if they don't exist
-db.get_db(name="main.db")
-
-# Check if predefined habits have already been created. If not, create them.
-check_predefined_habits = db.get_all_habits(db, 'predefined', 0)
-if len(check_predefined_habits) == 0:
-    db.insert_predefined_habits(db)
+if --name-- == "--main--":
+    cli()
 
 
 # Main program
