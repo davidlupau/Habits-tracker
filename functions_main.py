@@ -6,15 +6,16 @@ from analysis import Analysis
 from error_handler import error_2, error_4
 
 
-def cli()
+def cli():
     """Function to prompt the user to press Enter to return to the main menu."""
     # Call function to create the database and the tables if they don't exist
-    get_db(name="main.db")
+    db = get_db(name="main.db")
 
     # Check if predefined habits have already been created. If not, create them.
-    check_predefined_habits = get_all_habits(db, 'predefined', 0)
+    check_predefined_habits = get_all_habits(db, created_by='predefined', is_active=0)
     if len(check_predefined_habits) == 0:
         insert_predefined_habits(db)
+    return db
 
 
 def main_menu():

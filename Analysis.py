@@ -45,7 +45,7 @@ class Analysis:
 
         # Get the habit details
         habit_id = longest_streak[0]
-        habit_details = get_habit_details(habit_id, db, created_by, is_active)
+        habit_details = get_habit_details(db, habit_id, created_by, is_active)
 
         # Access the periodicity to display the correct information
         if habit_details[2] == "daily":
@@ -57,9 +57,9 @@ class Analysis:
 
         # Display all information regarding the longest streak
         if longest_streak[3] is None:
-            print(f"The longest streak of all habits is habit #", longest_streak[0], ", ", habit_details[1], "is", longest_streak[1], " ", {periodicity}, ". It started on", longest_streak[2], "and is still ongoing.\n")
+            print(f"The longest streak of all habits is habit #", longest_streak[0], ", ", habit_details[1], "is", longest_streak[1], " ", periodicity, ". It started on", longest_streak[2], "and is still ongoing.\n")
         else:
-            print(f"The longest streak of all habits is habit #", longest_streak[0], ", ", habit_details[1], "is", longest_streak[1], " ", {periodicity}, ". It started on", longest_streak[2], "and ended on", longest_streak[3], "\n")
+            print(f"The longest streak of all habits is habit #", longest_streak[0], ", ", habit_details[1], "is", longest_streak[1], " ", periodicity, ". It started on", longest_streak[2], "and ended on", longest_streak[3], "\n")
 
     def display_longest_streak_one_habit(self, db, habit_id, created_by, is_active):
         """Method to display the longest streak of a specific habit. habit_id is entered by the user.
@@ -85,9 +85,9 @@ class Analysis:
         if streak is not None:
             # If there is no end date, the streak is still ongoing
             if streak[3] is None:
-                print(f"Longest streak for habit #", habit_id, ", ", habit_details[1], "is", streak[1], " ", {periodicity}, ". It started on", streak[2], "and is still ongoing.\n")
+                print(f"Longest streak for habit #", habit_id, ", ", habit_details[1], "is", streak[1], " ", periodicity, ". It started on", streak[2], "and is still ongoing.\n")
             else:
-                print(f"Longest streak for habit #", habit_id, ", ", habit_details[1], "is", streak[1], " ", {periodicity}, ". It started on", streak[2], "and ended on", streak[3], "\n")
+                print(f"Longest streak for habit #", habit_id, ", ", habit_details[1], "is", streak[1], " ", periodicity, ". It started on", streak[2], "and ended on", streak[3], "\n")
         else:
             print(f"No streak data available for habit #{habit_id}.")
 

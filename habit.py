@@ -16,12 +16,14 @@ class Habit:
         - prompt_for_task: Method to prompt the user for the task name
         - prompt_for_periodicity: Method to prompt the user for the periodicity of the habit (daily, monthly, weekly)"""
 
-    def __init__(self, task, periodicity, date, checkoffs, created_by):
+    def __init__(self, habit_id=None, task=None, periodicity=None, date=None, checkoffs=0, created_by='user', is_active=True):
+        self.habit_id = habit_id
         self.task = task
         self.periodicity = periodicity
         self.date = date
         self.checkoffs = checkoffs
         self.created_by = created_by
+        self.is_active = is_active
 
     def prompt_for_task(self):
         """Method to prompt the user for the task name. Input is taken from the command line. If the input is empty, the user is prompted to try again."""

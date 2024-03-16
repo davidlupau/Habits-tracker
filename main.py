@@ -1,13 +1,13 @@
 # Description: This is the main file for the MindMold program. It will be the file that the user runs to interact with the program.
 from habit import Habit
 from analysis import Analysis
-import db
-from functions_main import main_menu, get_int_choice, return_to_menu, habits_list, task_periodicity
+from db import add_habit, start_streak, add_checkoff, get_habit_ids, update_habit, increment_current_streak, end_streak, delete_habit
+from functions_main import cli, main_menu, get_int_choice, return_to_menu, habits_list, task_periodicity
 from error_handler import error_3, error_4, error_5
 
 
-if --name-- == "--main--":
-    cli()
+if __name__ == '__main__':
+    db = cli()
 
 
 # Main program
@@ -24,11 +24,11 @@ if user_choice == 1:
     periodicity = habit_prompts.prompt_for_periodicity()
 
     # Call a function that add the habit to the database and return the habit_id of the newly created habit
-    habit_id = db.add_habit(db, task, periodicity,)
+    habit_id = add_habit(db, task, periodicity)
 
     # Get the habit_id of the new habit to initiate the streak in streak table and add a checkoff in checkoffs table
-    db.start_streak(db, habit_id)
-    db.add_checkoff(db, habit_id)
+    start_streak(db, habit_id)
+    add_checkoff(db, habit_id)
 
     print(f"New habit '{task}' created successfully!\n")
 
@@ -52,7 +52,7 @@ elif user_choice == 3:
     # User is asked to choose a habit to update
     print("Which habit would you like to update? Enter the habit id and press enter:")
     habit_id = get_int_choice()
-    active_habits = db.get_habit_ids(db)
+    active_habits = get_habit_ids(db)
 
     # Check if the habit_id entered by the user is valid
     if habit_id in active_habits:
@@ -83,7 +83,7 @@ elif user_choice == 3:
             print(error_5.get_error_message())
 
         # Call a function to update the habit in the database
-        db.update_habit(db, habit_id, new_task, new_periodicity)
+        update_habit(db, habit_id, new_task, new_periodicity)
         print(f"Habit {habit_id} updated successfully!\n")
         # Prompt the user to press Enter to continue
         return_to_menu()
@@ -100,7 +100,7 @@ elif user_choice == 4:
     # User is asked to choose a habit to mark as completed
     print("Which habit would you like to mark as completed? Enter the habit id and press enter:")
     habit_id = get_int_choice()
-    active_habits = db.get_habit_ids(db)
+    active_habits = get_habit_ids(db)
 
     # Check if the habit_id entered by the user is valid
     if habit_id in active_habits:
@@ -113,19 +113,19 @@ elif user_choice == 4:
         choice = get_int_choice()
         if choice == 1:
             # Call a function to check if the habit is broken
-            habit_continuity = continuity.check_habit_continuity(db, habit_id)
+            habit_continuity = continuity.check_habit_continuity(db, habit_id, 'user', 1)
             if habit_continuity == True:
                 # Call a function to add a checkoff in the checkoffs table
-                db.add_checkoff(db, habit_id)
-                db.increment_current_streak(db, habit_id)
+                add_checkoff(db, habit_id)
+                increment_current_streak(db, habit_id)
                 print(f"Well done. Your streak is still active. Habit {habit_id} mark as completed successfully!\n")
                 # Prompt the user to press Enter to continue
                 return_to_menu()
             else:
                 # Call a function to add a checkoff in the checkoffs table, end the current streak and start a new one
-                db.add_checkoff(db, habit_id)
-                db.end_streak(db, habit_id)
-                db.start_streak(db, habit_id)
+                add_checkoff(db, habit_id)
+                end_streak(db, habit_id)
+                start_streak(db, habit_id)
                 print(f"Oops! It seems that you missed a checkoff but you've completed your habit and started a new streak. Habit {habit_id} mark as completed successfully!\n")
         elif choice == 2:
             print("Habit completion not updated.")
@@ -145,7 +145,7 @@ elif user_choice == 5:
     # User is asked to choose a habit to delete
     print("Which habit would you like to delete? Enter the habit id and press enter:")
     habit_id = get_int_choice()
-    active_habits = db.get_habit_ids(db)
+    active_habits = get_habit_ids(db)
 
     # Check if the habit_id entered by the user is valid
     if habit_id in active_habits:
@@ -155,7 +155,7 @@ elif user_choice == 5:
 
         choice = get_int_choice()
         if choice == 1:
-            db.delete_habit(db, habit_id)
+            delete_habit(db, habit_id)
             print(f"Habit {habit_id} deleted successfully!\n")
             # Prompt the user to press Enter to continue
             return_to_menu()
@@ -172,7 +172,7 @@ elif user_choice == 5:
     # User is asked to choose a habit to delete
     print("Which habit would you like to delete? Enter the habit id and press enter:")
     habit_id = get_int_choice()
-    active_habits = db.get_habit_ids(db)
+    active_habits = get_habit_ids(db)
 
     # Check if the habit_id entered by the user is valid
     if habit_id in active_habits:
@@ -182,7 +182,7 @@ elif user_choice == 5:
 
         choice = get_int_choice()
         if choice == 1:
-            db.delete_habit(db, habit_id)
+            delete_habit(db, habit_id)
             print(f"Habit {habit_id} deleted successfully!\n")
             # Prompt the user to press Enter to continue
             return_to_menu()
@@ -231,7 +231,7 @@ elif user_choice == 6:
 
         print("Which habit would you like to analyze? Enter the habit id and press enter:")
         habit_id = get_int_choice()
-        active_habits = db.get_habit_ids(db)
+        active_habits = get_habit_ids(db)
 
         # Check if the habit_id entered by the user is valid
         if habit_id in active_habits:
@@ -257,7 +257,7 @@ elif user_choice == 7:
     # Displays a list of predefined habits with daily periodicity
     print("MindMold can also display the list of all habits with the same periodicity. Here is an example with the list of all predefined habits with daily periodicity:")
     habit_by_periodicity = Analysis()
-    habit_by_periodicity.display_habits_by_periodicity(db, 'daily', 'user', 1)
+    habit_by_periodicity.display_habits_by_periodicity(db, 'daily', 'predefined', 0)
 
     # Prompt the user to press Enter to continue
     input("Press Enter to continue...")
@@ -273,7 +273,7 @@ elif user_choice == 7:
     # Display the longest streak of a specific predefined habit
     print("MindMold can also display the longest streak of a specific habit. Here is an example with the longest streak of a specific predefined habit:")
     habit_streak = Analysis()
-    habit_streak.display_longest_streak_one_habit(db, 3, 'predefined', 2)
+    habit_streak.display_longest_streak_one_habit(db, 3, 'predefined', 0)
 
     print("End of demo. You can now use MindMold to track your habits and analyze your progress. Good luck!")
     # Prompt the user to press Enter to continue

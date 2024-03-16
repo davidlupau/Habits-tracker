@@ -59,7 +59,7 @@ def insert_predefined_habits(db):
     ]
 
 	cur.executemany("""INSERT INTO habits (habit_id, task, periodicity, created_by, created_on, updated_on, is_active)
-		VALUES (?, ?, ?, ?, ?, ?, ?
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 		""", predefined_habits)
 
 	predefined_streaks = [
@@ -81,14 +81,15 @@ def add_habit(db, task, periodicity):
 		- The creation date is set to the current date by default in the database.
 		- created_by is set by default to 'user' when user creates habit and set to 'predefined' for predefined habits.
 		- is_active is set to 1 by default."""
-	cur = db.cursor()
-	cur.execute("""
+	cursor = db.cursor()
+	cursor.execute("""
 		INSERT INTO habits (task, periodicity)
 		VALUES (?, ?)
 		""", (task, periodicity))
+
 	db.commit()
 # Get the habit_id of the newly created habit
-	habit_id = cur.lastrowid
+	habit_id = cursor.lastrowid
 	return habit_id
 
 def update_habit(db, habit_id, task, periodicity):
@@ -125,10 +126,10 @@ def get_habit_details(db, habit_id, created_by, is_active):
     Returns: A tuple containing the habit details such as name, periodicity, and other relevant information."""
 	cur = db.cursor()
 	cur.execute("""
-        SELECT habit_id, task, periodicity, created_by, created_on, is_active
-        FROM habits
-        WHERE habit_id = ? AND created_by = ? AND is_active = ?;
-        """, (habit_id, created_by, is_active))
+		SELECT habit_id, task, periodicity, created_by, created_on, is_active
+		FROM habits
+		WHERE habit_id = ? AND created_by = ? AND is_active = ?;
+		""", (habit_id, created_by, is_active))
 	return cur.fetchone()
 
 # Functions to interact with checkoff table
@@ -156,7 +157,10 @@ def last_checkedoff_on(db, habit_id):
 		ORDER BY checkedoff_on DESC
 		LIMIT 1;
 		""", (habit_id,))
-	return cur.fetchone()
+	result = cur.fetchone()
+	if result:
+		return result[0]  # Return the first (and only) item in the tuple
+	return None  # Return None if there is no result
 
 # Functions to retrieve lists of habits for analysis
 def get_all_habits(db, created_by, is_active):
@@ -181,7 +185,7 @@ def get_habit_ids(db):
 		FROM habits
 		WHERE created_by = ? AND is_active = ?
 		""", ('user', 1))
-	return cur.fetchall()
+	return [id[0] for id in cur.fetchall()]
 
 def get_habits_by_periodicity(db, periodicity, created_by, is_active):
 	"""Function that retrieves list of active tracked habits by periodicity.
@@ -208,7 +212,7 @@ def start_streak(db, habit_id):
 	cur.execute("""
 		INSERT INTO streaks (habit_id, started_on)
 		Values (?, date('now'));
-		""", (habit_id))
+		""", (habit_id,))
 	db.commit()
 
 def increment_current_streak(db, habit_id):
@@ -259,10 +263,11 @@ def get_longest_streak_one_habit(db, habit_id, created_by, is_active):
 		- is_active: 1 if created by user, 0 if predefined."""
 	cur = db.cursor()
 	cur.execute("""
-		SELECT habit_id, current_streak, started_on, ended_on
-		FROM streaks
-		WHERE habit_id = ? AND created_by = ? AND is_active = ?
-		ORDER BY current_streak DESC
+        SELECT s.habit_id, s.current_streak, s.started_on, s.ended_on
+        FROM streaks s
+        JOIN habits h ON s.habit_id = h.habit_id
+        WHERE h.created_by = ? AND h.is_active = ?
+        ORDER BY s.current_streak DESC
         LIMIT 1;
-        """,(habit_id, created_by, is_active))
+        """, (created_by, is_active))
 	return cur.fetchone()
