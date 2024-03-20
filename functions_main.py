@@ -136,6 +136,8 @@ def handle_choice(db, user_choice):
                     end_streak(db, habit_id)
                     start_streak(db, habit_id)
                     print(f"Oops! It seems that you missed a checkoff but you've completed your habit and started a new streak. Habit {habit_id} mark as completed successfully!\n")
+                    # Prompt the user to press Enter to continue
+                    return_to_menu(db)
             elif choice == 2:
                 print("Habit completion not updated.")
                 # Prompt the user to press Enter to continue
@@ -244,7 +246,6 @@ def handle_choice(db, user_choice):
                 print("Which habit would you like to analyze? Enter the habit id and press enter:")
                 habit_id = get_int_choice()
                 active_habits = get_habit_ids(db)
-                break
 
                 # Check if the habit_id entered by the user is valid
                 if habit_id in active_habits:

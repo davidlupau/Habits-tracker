@@ -73,7 +73,7 @@ def insert_predefined_habits(db):
 
 	db.commit()
 
-def add_habit(db, task, periodicity):
+def add_habit(db, task, periodicity, created_on=None):
 	"""Function to add a new habit to habits table. It returns habit_id of the new habit to be used in the streak table.
 	Parameters:
 		- Task and periodicity are entered by the user.
@@ -82,10 +82,17 @@ def add_habit(db, task, periodicity):
 		- created_by is set by default to 'user' when user creates habit and set to 'predefined' for predefined habits.
 		- is_active is set to 1 by default."""
 	cursor = db.cursor()
-	cursor.execute("""
-		INSERT INTO habits (task, periodicity)
-		VALUES (?, ?)
-		""", (task, periodicity))
+	if created_on is None:
+		cursor.execute("""
+			INSERT INTO habits (task, periodicity, created_on)
+			VALUES (?, ?, date('now'))
+			""", (task, periodicity))
+
+	else:
+		cursor.execute("""
+			INSERT INTO habits (task, periodicity, created_on)
+			VALUES (?, ?, ?)
+			""", (task, periodicity, created_on))
 
 	db.commit()
 # Get the habit_id of the newly created habit
@@ -133,15 +140,22 @@ def get_habit_details(db, habit_id, created_by, is_active):
 	return cur.fetchone()
 
 # Functions to interact with checkoff table
-def add_checkoff(db, habit_id):
+def add_checkoff(db, habit_id, checkedoff_on=None):
 	"""Function to mark a habit as completed. Add a new record in checkoffs table. The date is set to the current date by default in the database.
 	Parameters:
 		- habit_id: the unique identifier of the habit to be checked off."""
 	cur = db.cursor()
-	cur.execute("""
-		INSERT INTO checkoffs (habit_id)
-			VALUES (?)
+	# If checkedoff_on is None, use the current date
+	if checkedoff_on is None:
+		cur.execute("""
+			INSERT INTO checkoffs (habit_id, checkedoff_on)
+			VALUES (?, date('now'))
 			""", (habit_id,))
+	else:
+		cur.execute("""
+			INSERT INTO checkoffs (habit_id, checkedoff_on)
+			VALUES (?, ?)
+			""", (habit_id, checkedoff_on))
 	db.commit()
 
 def last_checkedoff_on(db, habit_id):
@@ -203,16 +217,22 @@ def get_habits_by_periodicity(db, periodicity, created_by, is_active):
 	return cur.fetchall()
 
 # Functions to handle streaks.
-def start_streak(db, habit_id):
+def start_streak(db, habit_id, started_on=None):
 	"""Function to add a new record to the streak table when a new habit is created by user or when user mark habit as completed after breaking it
 	Parameters:
 		- The creation date is set to the current date by default in the database.
 		- habit_id will be used as foreign key to track the habit's streak. It is retrieved from add_habit function."""
 	cur = db.cursor()
-	cur.execute("""
-		INSERT INTO streaks (habit_id, started_on)
-		Values (?, date('now'));
-		""", (habit_id,))
+	if started_on is None:
+		cur.execute("""
+			INSERT INTO streaks (habit_id, started_on)
+			Values (?, date('now'));
+			""", (habit_id,))
+	else:
+		cur.execute("""
+			INSERT INTO streaks (habit_id, started_on)
+			Values (?, ?);
+			""", (habit_id, started_on))
 	db.commit()
 
 def increment_current_streak(db, habit_id):
@@ -256,18 +276,18 @@ def get_longest_streak_all_habits(db, created_by, is_active):
 	return cur.fetchone()
 
 def get_longest_streak_one_habit(db, habit_id, created_by, is_active):
-	"""Function to retrieve the longest streak of a specific habit. Returns habit_id, streak, start and end dates.
-	Parameter:
-		- habit_id: the unique identifier of the habit user wants the longest streak for.
-		- created_by: 'user' or 'predefined'
-		- is_active: 1 if created by user, 0 if predefined."""
-	cur = db.cursor()
-	cur.execute("""
+    """Function to retrieve the longest streak of a specific habit. Returns habit_id, streak, start and end dates.
+    Parameter:
+        - habit_id: the unique identifier of the habit user wants the longest streak for.
+        - created_by: 'user' or 'predefined'
+        - is_active: 1 if created by user, 0 if predefined."""
+    cur = db.cursor()
+    cur.execute("""
         SELECT s.habit_id, s.current_streak, s.started_on, s.ended_on
         FROM streaks s
         JOIN habits h ON s.habit_id = h.habit_id
-        WHERE h.created_by = ? AND h.is_active = ?
+        WHERE h.created_by = ? AND h.is_active = ? AND s.habit_id = ?
         ORDER BY s.current_streak DESC
         LIMIT 1;
-        """, (created_by, is_active))
-	return cur.fetchone()
+        """, (created_by, is_active, habit_id))
+    return cur.fetchone()
