@@ -1,3 +1,5 @@
+# Contains all the functions to interact with the database. The functions are used in the habit and analysis modules to interact with the database. The functions are also tested in the test_project.py file.
+
 import sqlite3
 
 
@@ -9,7 +11,7 @@ def get_db(name="main.db"):
 
 
 def create_tables(db):
-	"""Create tables for errors messages, streaks, checkoffs and habits from the create_table_sql statement."""
+	"""Create tables for errors messages, streaks, checkoffs and habits from the create_table_sql statement. Requires a database connection."""
 	cursor = db.cursor()
 
 	# Creation of the table to store habits
@@ -46,7 +48,8 @@ def create_tables(db):
 def insert_predefined_habits(db):
 	"""Insert predefined habits into the database: 6 habits in Habits table and 2 streaks are entered in Streaks table.
     Parameters:
-		task, periodicity, created_by, is_active and dates are predefined and entered by the developer."""
+		task, periodicity, created_by, is_active and dates are predefined and entered by the developer.
+		Requires a database connection."""
 	cur = db.cursor()
 
 	predefined_habits = [
@@ -80,7 +83,8 @@ def add_habit(db, task, periodicity, created_on=None):
 		- Periodicity is either daily, weekly, monthly
 		- The creation date is set to the current date by default in the database.
 		- created_by is set by default to 'user' when user creates habit and set to 'predefined' for predefined habits.
-		- is_active is set to 1 by default."""
+		- is_active is set to 1 by default.
+		- Requires a database connection."""
 	cursor = db.cursor()
 	if created_on is None:
 		cursor.execute("""
@@ -103,7 +107,8 @@ def update_habit(db, habit_id, task, periodicity):
 	"""Function to update a habit in habits table
 	Parameters:
 		- task and periodicity are entered by the user.
-		- habit_id: the unique identifier of the habit to be deleted."""
+		- habit_id: the unique identifier of the habit to be deleted.
+		- Requires a database connection."""
 	cur = db.cursor()
 	cur.execute("""
 		UPDATE habits
@@ -115,7 +120,8 @@ def update_habit(db, habit_id, task, periodicity):
 def delete_habit(db, habit_id):
 	"""Function to deactivate a habit in habits table. User wishes to delete a habit, is_active is set to 0 in the database.
 	Parameters:
-		- habit_id: the unique identifier of the habit to be deleted."""
+		- habit_id: the unique identifier of the habit to be deleted.
+		- Requires a database connection."""
 	cur = db.cursor()
 	cur.execute("""
 		UPDATE habits
@@ -130,6 +136,7 @@ def get_habit_details(db, habit_id, created_by, is_active):
     	- habit_id: The unique identifier of the habit.
     	- created_by: 'user' or 'predefined'
     	- is_active: 1 if created by user, 0 if predefined.
+    	- Requires a database connection.
     Returns: A tuple containing the habit details such as name, periodicity, and other relevant information."""
 	cur = db.cursor()
 	cur.execute("""
@@ -143,7 +150,8 @@ def get_habit_details(db, habit_id, created_by, is_active):
 def add_checkoff(db, habit_id, checkedoff_on=None):
 	"""Function to mark a habit as completed. Add a new record in checkoffs table. The date is set to the current date by default in the database.
 	Parameters:
-		- habit_id: the unique identifier of the habit to be checked off."""
+		- habit_id: the unique identifier of the habit to be checked off.
+		- Requires a database connection."""
 	cur = db.cursor()
 	# If checkedoff_on is None, use the current date
 	if checkedoff_on is None:
@@ -162,7 +170,8 @@ def last_checkedoff_on(db, habit_id):
 	"""Function to retrieve the last checkedoff date of a habit.
 	Returns the last checkedoff date of a habit from the checkoffs table.
 	Parameters:
-		- habit_id: the unique identifier of the habit to be checked off."""
+		- habit_id: the unique identifier of the habit to be checked off.
+		- Requires a database connection."""
 	cur = db.cursor()
 	cur.execute("""
 		SELECT checkedoff_on
@@ -181,7 +190,8 @@ def get_all_habits(db, created_by, is_active):
 	"""Function to retrieve a list of all active tracked habits (is_active = 1) from the habits table created by user (created_by = user).
 	Parameters:
 		- created_by: 'user' or 'predefined'
-		- is_active: 1 if created by user, 0 if predefined."""
+		- is_active: 1 if created by user, 0 if predefined.
+		- Requires a database connection."""
 	cur = db.cursor()
 	cur.execute("""
 		SELECT *
@@ -192,6 +202,7 @@ def get_all_habits(db, created_by, is_active):
 
 def get_habit_ids(db):
 	"""Function to retrieve a list of all active tracked habits (is_active = 1) from the habits table created by user (created_by = user).
+	Requires a database connection.
 	Function returns a list of habit_id."""
 	cur = db.cursor()
 	cur.execute("""
@@ -207,6 +218,7 @@ def get_habits_by_periodicity(db, periodicity, created_by, is_active):
 		- periodicity is selected by the user (daily, weekly or monthly).
 		- created_by: 'user' or 'predefined'
 		- is_active: 1 if created by user, 0 if predefined.
+		- Requires a database connection.
 	Returns a list of habits with the requested periodicity."""
 	cur = db.cursor()
 	cur.execute("""
@@ -221,7 +233,8 @@ def start_streak(db, habit_id, started_on=None):
 	"""Function to add a new record to the streak table when a new habit is created by user or when user mark habit as completed after breaking it
 	Parameters:
 		- The creation date is set to the current date by default in the database.
-		- habit_id will be used as foreign key to track the habit's streak. It is retrieved from add_habit function."""
+		- habit_id will be used as foreign key to track the habit's streak. It is retrieved from add_habit function.
+		- Requires a database connection."""
 	cur = db.cursor()
 	if started_on is None:
 		cur.execute("""
@@ -238,7 +251,8 @@ def start_streak(db, habit_id, started_on=None):
 def increment_current_streak(db, habit_id):
 	"""Function to update the current habit streak by adding 1 to integer in current_streak column
 	Parameters:
-		- habit_id: the unique identifier of the habit to be deleted."""
+		- habit_id: the unique identifier of the habit to be deleted.
+		- Requires a database connection."""
 	cur = db.cursor()
 	cur.execute("""
 		UPDATE streaks
@@ -249,8 +263,9 @@ def increment_current_streak(db, habit_id):
 
 def end_streak(db, habit_id):
 	"""Function to update the attribute is_active to 0 when habit is deleted or when user breaks the habit.
-	Parameter:
-		- habit_id: the unique identifier of the habit to be deleted."""
+	Parameters:
+		- habit_id: the unique identifier of the habit to be deleted.
+		- Requires a database connection."""
 	cur = db.cursor()
 	cur.execute("""
 		UPDATE streaks
@@ -264,7 +279,8 @@ def get_longest_streak_all_habits(db, created_by, is_active):
 	Parameters:
 		- created_by: 'user' or 'predefined'
 		- is_active: 1 if created by user, 0 if predefined.
-	Returns habit_id, streak, start and end dates."""
+	Returns habit_id, streak, start and end dates.
+	- Requires a database connection."""
 	cur = db.cursor()
 	cur.execute("""
 		SELECT habit_id, current_streak, started_on, ended_on
@@ -277,10 +293,11 @@ def get_longest_streak_all_habits(db, created_by, is_active):
 
 def get_longest_streak_one_habit(db, habit_id, created_by, is_active):
     """Function to retrieve the longest streak of a specific habit. Returns habit_id, streak, start and end dates.
-    Parameter:
+    Parameters:
         - habit_id: the unique identifier of the habit user wants the longest streak for.
         - created_by: 'user' or 'predefined'
-        - is_active: 1 if created by user, 0 if predefined."""
+        - is_active: 1 if created by user, 0 if predefined.
+        - Requires a database connection."""
     cur = db.cursor()
     cur.execute("""
         SELECT s.habit_id, s.current_streak, s.started_on, s.ended_on

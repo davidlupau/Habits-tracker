@@ -3,7 +3,7 @@ class Error_handler:
     This class allows for the creation of error message objects that can be reused across the application.
     Attributes:
         error_message (str): A descriptive error message.
-    Methods:
+    Method:
         get_error_message(): Returns the stored error message."""
 
 	def __init__(self, error_message: str):

@@ -7,7 +7,6 @@ if __name__ == '__main__':
     db = cli()
 
 
-# Main program
 # Display the main menu with a welcome message and prompt the user for a choice
 print("Welcome to MindMold. Mold your mind and body into their best versions with MindMold – habit tracking made easy! \n")
 print("You've taken the first step towards transforming your life, one habit at a time. What's on the agenda today?")
