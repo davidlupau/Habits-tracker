@@ -287,7 +287,7 @@ def handle_choice(db, user_choice):
         # Display the longest streak of a specific predefined habit
         print("MindMold can also display the longest streak of a specific habit. Here is an example with the longest streak of a specific predefined habit:")
         habit_streak = Analysis()
-        habit_streak.display_longest_streak_one_habit(db, 3, 'predefined', 0)
+        habit_streak.display_longest_streak_one_habit(db, 2, 'predefined', 0)
 
         print("End of demo. You can now use MindMold to track your habits and analyze your progress. Good luck!")
         # Prompt the user to press Enter to continue

@@ -1,7 +1,7 @@
 from db import get_all_habits, get_longest_streak_all_habits, get_habit_details, get_longest_streak_one_habit, get_habits_by_periodicity
 
 class Analysis:
-"""Class to handle the analysis of habits and their streaks. The class contains methods to display the list of habits, the longest streak of all habits, the longest streak of a specific habit, and the list of habits by periodicity."""
+    """Class to handle the analysis of habits and their streaks. The class contains methods to display the list of habits, the longest streak of all habits, the longest streak of a specific habit, and the list of habits by periodicity."""
     def display_habit_list(self, db, created_by, is_active):
         """Method to display the list of habits retrieved from the database.
         Parameter:
